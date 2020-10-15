@@ -84,7 +84,8 @@ var
   hWindow: HWnd;
 begin
   hWindow := CreateWindow(AppName, 'Вікно, створене з використанням API',
-    WS_OVERLAPPEDWINDOW, 100, 100, 600, 400, 0, 0, HInstance, nil);
+    WS_OVERLAPPEDWINDOW and WS_MINIMIZEBOX, 100, 100, 600, 400, 0, 0, HInstance, nil);
+
   if hWindow <> 0 then
   begin
     //Параметры окна
@@ -93,7 +94,7 @@ begin
 
     //Параметры кнопки выхода
     hBtnExit := CreateWindow('BUTTON', 'Вихід', WS_CHILD or BS_DEFPUSHBUTTON or WS_TABSTOP,
-      100, 10, 90, 30, hWindow, 0, HInstance, nil);
+      500, 105, 90, 30, hWindow, 0, HInstance, nil);
 
     //Параметры лейблов
     hLabel_1 := CreateWindow('Static', 'Это первый статический текст', WS_VISIBLE or
