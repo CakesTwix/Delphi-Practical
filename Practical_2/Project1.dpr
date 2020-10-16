@@ -50,14 +50,20 @@ begin
         exit;
       end
 
+      // Натиснено кнопку "Відміна"
+      else if (LoWord(WParam)=IDCANCEL) then DestroyWindow(Window)
+
       //Обработчик кнопки Про окно
       else if LParam = hBtnAbout then
         DialogBox(hInstance,'ICDialog',hWindow,@WindowProc);
-        
+
+
     WM_KEYDOWN: if (WParam = VK_RETURN) or (WParam = VK_ESCAPE) then
         SendMessage(hBtnExit, BM_CLICK, 0, 0)
       else if WParam = VK_F1 then
         SendMessage(hBtnAbout, BM_CLICK, 0, 0);
+
+
   end;
 
   WindowProc := DefWindowProc(Window, AMessage, WParam, LParam);
