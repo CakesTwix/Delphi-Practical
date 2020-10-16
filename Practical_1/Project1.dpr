@@ -16,6 +16,7 @@ var
 
   //Кнопки
   hBtnExit: HWnd;
+  hBtn3: HWnd;
   hBtnAbout: HWnd;
 
   //Лейблы
@@ -25,8 +26,9 @@ var
 
   //Поле ввода текста
   hEdit: HWnd;
+  hEdit2: HWnd;
 
-//Функция, которая обрабатывает кнопки
+//Основная логика
 function WindowProc(Window: HWnd; AMessage, WParam, LParam: longint): longint; stdcall; export;
 begin
   WindowProc := 0;
@@ -39,6 +41,13 @@ begin
     WM_COMMAND:
       //Обработчик кнопки выхода
       if LParam = hBtnExit then
+      begin
+        PostQuitMessage(0);
+        exit;
+      end
+
+      //Обработчик кнопки
+      else if LParam = hBtn3 then
       begin
         PostQuitMessage(0);
         exit;
@@ -84,7 +93,7 @@ var
   hWindow: HWnd;
 begin
   hWindow := CreateWindow(AppName, 'Вікно, створене з використанням API',
-    WS_OVERLAPPEDWINDOW and WS_MINIMIZEBOX, 100, 100, 600, 400, 0, 0, HInstance, nil);
+    WS_OVERLAPPEDWINDOW or WS_MINIMIZEBOX, 100, 100, 600, 400, 0, 0, HInstance, nil);
 
   if hWindow <> 0 then
   begin
@@ -93,8 +102,10 @@ begin
     UpdateWindow(hWindow);
 
     //Параметры кнопки выхода
+    hBtn3 := CreateWindow('BUTTON', 'Test', WS_CHILD or BS_DEFPUSHBUTTON or WS_TABSTOP,
+      500, 150, 90, 30, hWindow, 0, HInstance, nil);
     hBtnExit := CreateWindow('BUTTON', 'Вихід', WS_CHILD or BS_DEFPUSHBUTTON or WS_TABSTOP,
-      500, 105, 90, 30, hWindow, 0, HInstance, nil);
+      400, 105, 90, 30, hWindow, 0, HInstance, nil);
 
     //Параметры лейблов
     hLabel_1 := CreateWindow('Static', 'Это первый статический текст', WS_VISIBLE or
@@ -107,6 +118,8 @@ begin
     //Параметры поля ввода
     hEdit := CreateWindowEx(WS_EX_CLIENTEDGE, 'Edit', 'Введите текст', WS_VISIBLE or
       WS_CHILD or ES_LEFT or ES_AUTOHSCROLL, 10, 70, 360, 23, hWindow, 0, hInstance, nil);
+    hEdit2 := CreateWindowEx(WS_EX_CLIENTEDGE, 'Edit', 'Введите текст', WS_VISIBLE or
+      WS_CHILD or ES_LEFT or ES_AUTOHSCROLL, 10, 100, 360, 23, hWindow, 0, hInstance, nil);
 
     if hBtnExit <> 0 then
       ShowWindow(hBtnExit, SW_SHOWNORMAL);
@@ -114,11 +127,15 @@ begin
       ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
       'Times New Roman Cyr'), 1);
 
+    if hBtn3 <> 0 then
+      ShowWindow(hBtn3, SW_SHOWNORMAL);
+
     //Параметры кнопки Про окно
     hBtnAbout := CreateWindow('BUTTON', 'Про вікно...', WS_CHILD or WS_TABSTOP,
       500, 75, 90, 30, hWindow, 0, HInstance, nil);
     if hBtnAbout <> 0 then
       ShowWindow(hBtnAbout, SW_SHOWNORMAL);
+
   end;
   result := hWindow;
 end;
