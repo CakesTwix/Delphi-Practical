@@ -1,5 +1,9 @@
 ﻿program Window;
 
+
+
+{$R 'Res.res' 'Res.rc'}
+
 uses
   Windows,
   Messages;
@@ -8,7 +12,7 @@ const
   AppName = 'API Window';
 var
   AMessage: TMsg;
-  Buff : Array[0..127] of char; s : String;
+  Buff : Array[0..127] of char;
 
   //Определяем элементы интерфейса
 
@@ -27,6 +31,7 @@ var
   //Поле ввода текста
   hEdit: HWnd;
 
+  {$R Res.res}
 //Функция, которая обрабатывает кнопки
 function WindowProc(Window: HWnd; AMessage, WParam, LParam: longint): longint; stdcall; export;
 begin
@@ -47,9 +52,8 @@ begin
 
       //Обработчик кнопки Про окно
       else if LParam = hBtnAbout then
-        MessageBox(Window,
-          'Вікно, створене функціями API, без використання VCL Delphi.' + #13#13 +
-          'Copyright© Microsoft... і т.д.', 'API Window', MB_OK or MB_ICONINFORMATION);
+        DialogBox(hInstance,'ICDialog',hWindow,@WindowProc);
+        
     WM_KEYDOWN: if (WParam = VK_RETURN) or (WParam = VK_ESCAPE) then
         SendMessage(hBtnExit, BM_CLICK, 0, 0)
       else if WParam = VK_F1 then
@@ -98,20 +102,17 @@ begin
       500, 105, 90, 30, hWindow, 0, HInstance, nil);
 
     //Параметры лейблов
-    hLabel_1 := CreateWindow('Static', 'Это первый статический текст', WS_VISIBLE or
+    hLabel_1 := CreateWindow('Static', 'Результат вычислений:', WS_VISIBLE or
       WS_CHILD or SS_LEFT, 10, 10, 360, 44, hWindow, 0, hInstance, nil);
-    hLabel_2 := CreateWindow('Static', 'Это второй статический текст', WS_VISIBLE or
-      WS_CHILD or SS_LEFT, 10, 30, 360, 44, hWindow, 0, hInstance, nil);
-    hLabel_3 := CreateWindow('Static', 'Это третий статический текст', WS_VISIBLE or
-      WS_CHILD or SS_LEFT, 10, 50, 360, 44, hWindow, 0, hInstance, nil);
 
     //Параметры поля ввода
     hEdit := CreateWindowEx(WS_EX_CLIENTEDGE, 'Edit', 'Введите текст', WS_VISIBLE or
       WS_CHILD or ES_LEFT or ES_AUTOHSCROLL, 10, 70, 360, 23, hWindow, 0, hInstance, nil);
 
 
-    GetWindowText(hEdit,Buff,SizeOf(Buff));
-    SetWindowText(hLabel_1,Buff);
+    GetWindowText(hLabel_1,Buff,SizeOf(Buff));
+    //SetWindowText(hLabel_1,Buff);
+    SendMessage(hEdit,WM_SETTEXT,0,DWORD(PChar(''+Buff)));
 
     if hBtnExit <> 0 then
       ShowWindow(hBtnExit, SW_SHOWNORMAL);
