@@ -1,7 +1,7 @@
 #define A 101
 #define B 102
 ICDialog DIALOG 70, 50, 241, 96
-STYLE WS_POPUP
+STYLE WS_OVERLAPPEDWINDOW
 CAPTION "Решение функции"
 FONT 8, "MS Sans Serif"
 {

@@ -18,6 +18,7 @@ var
 
   //Само окно
   hWindow: HWnd;
+  h1Window: HWnd;
 
   //Кнопки
   hBtnExit: HWnd;
@@ -36,38 +37,25 @@ var
 function WindowProc(Window: HWnd; AMessage, WParam, LParam: longint): longint; stdcall; export;
 begin
   WindowProc := 0;
-  case AMessage of
-    WM_DESTROY:
-    begin
-      PostQuitMessage(0);
-      exit;
-    end;
-    WM_COMMAND:
-      //Обработчик кнопки выхода
-      if LParam = hBtnExit then
-      begin
-        PostQuitMessage(0);
-        exit;
-      end
 
-      // Натиснено кнопку "Відміна"
-      else if (LoWord(WParam)=IDCANCEL) then DestroyWindow(Window)
+case AMessage of
+  WM_INITDIALOG :
+    // Ініціалізація діалогового вікна
+    Result:=0;
 
-      //Обработчик кнопки Про окно
-      else if LParam = hBtnAbout then
-        DialogBox(hInstance,'ICDialog',hWindow,@WindowProc);
+  WM_COMMAND : if (LoWord(WParam)=IDOK) then begin EndDialog(Window,idOK) end // Натиснено кнопку "Відміна"
+  else if (LoWord(WParam)=IDCANCEL) then  begin EndDialog(Window,idCancel); end
+  else if LParam=hBtnAbout then begin DialogBox(hInstance,'ICDialog',h1Window,@WindowProc); end
+  else if LParam=hBtnExit then  begin PostQuitMessage(0); Exit; end;
 
 
-    WM_KEYDOWN: if (WParam = VK_RETURN) or (WParam = VK_ESCAPE) then
-        SendMessage(hBtnExit, BM_CLICK, 0, 0)
-      else if WParam = VK_F1 then
-        SendMessage(hBtnAbout, BM_CLICK, 0, 0);
+    WM_DESTROY : EndDialog(h1Window,idCancel);
+    else Result:=0;
 
-
+    WindowProc:=DefWindowProc(Window, AMessage, WParam, LParam);
+end;
   end;
 
-  WindowProc := DefWindowProc(Window, AMessage, WParam, LParam);
-end;
 
 function WinRegister: boolean;
 var
@@ -95,7 +83,7 @@ var
   hWindow: HWnd;
 begin
   hWindow := CreateWindow(AppName, 'Вікно, створене з використанням API',
-    WS_OVERLAPPEDWINDOW and WS_MINIMIZEBOX, 100, 100, 600, 400, 0, 0, HInstance, nil);
+    WS_EX_TOPMOST, 100, 100, 600, 400, 0, 0, HInstance, nil);
 
   if hWindow <> 0 then
   begin
