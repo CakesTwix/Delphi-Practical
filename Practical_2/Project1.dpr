@@ -12,7 +12,10 @@ const
   AppName = 'API Window';
 var
   AMessage: TMsg;
-  Buff : Array[0..127] of char;
+  ParamEditA, ParamEditB : PWideChar;
+  result : PWideChar;
+  Buff : array[0 .. 132] of Char;
+  test : PWideChar;
 
   //Определяем элементы интерфейса
 
@@ -26,11 +29,10 @@ var
 
   //Лейблы
   hLabel_1: HWnd;
-  hLabel_2: HWnd;
-  hLabel_3: HWnd;
 
   //Поле ввода текста
   hEdit: HWnd;
+  A,B: HWnd;
 
   {$R Res.res}
 //Функция, которая обрабатывает кнопки
@@ -39,20 +41,30 @@ begin
   WindowProc := 0;
 
 case AMessage of
-  WM_INITDIALOG :
+  WM_INITDIALOG : begin
     // Ініціалізація діалогового вікна
+    A:=GetDlgItem(Window,101);
+    B:=GetDlgItem(Window,102);
     Result:=0;
+  end;
 
-  WM_COMMAND : if (LoWord(WParam)=IDOK) then begin EndDialog(Window,idOK) end // Натиснено кнопку "Відміна"
+  WM_COMMAND : if (LoWord(WParam)=IDOK) then
+  begin
+    SendMessage(A,WM_GETTEXT,SendMessage(A,WM_GETTEXTLENGTH,0,0)+1,DWORD(@ParamEditA));
+    SendMessage(B,WM_GETTEXT,SendMessage(B,WM_GETTEXTLENGTH,0,0)+1,DWORD(@ParamEditB));
+    //GetWindowText(101,Buff,SizeOf(Buff));
+    //SetWindowText(hEdit, DWORD(test));
+    SendMessage(hEdit,WM_SETTEXT,0, DWORD(PChar(@ParamEditA)));
+  end
   else if (LoWord(WParam)=IDCANCEL) then  begin EndDialog(Window,idCancel); end
   else if LParam=hBtnAbout then begin DialogBox(hInstance,'ICDialog',h1Window,@WindowProc); end
   else if LParam=hBtnExit then  begin PostQuitMessage(0); Exit; end;
 
 
     WM_DESTROY : EndDialog(h1Window,idCancel);
-    else Result:=0;
+    //else Result:=0;
 
-    WindowProc:=DefWindowProc(Window, AMessage, WParam, LParam);
+    else WindowProc:=DefWindowProc(Window, AMessage, WParam, LParam);
 end;
   end;
 
@@ -100,13 +112,13 @@ begin
       WS_CHILD or SS_LEFT, 10, 10, 360, 44, hWindow, 0, hInstance, nil);
 
     //Параметры поля ввода
-    hEdit := CreateWindowEx(WS_EX_CLIENTEDGE, 'Edit', 'Введите текст', WS_VISIBLE or
+    hEdit := CreateWindowEx(WS_EX_CLIENTEDGE, 'Edit', '', WS_VISIBLE or
       WS_CHILD or ES_LEFT or ES_AUTOHSCROLL, 10, 70, 360, 23, hWindow, 0, hInstance, nil);
 
 
-    GetWindowText(hLabel_1,Buff,SizeOf(Buff));
+    //GetWindowText(hEdit,Buff,SizeOf(Buff));
     //SetWindowText(hLabel_1,Buff);
-    SendMessage(hEdit,WM_SETTEXT,0,DWORD(PChar(''+Buff)));
+    //SendMessage(hEdit,WM_SETTEXT,0,DWORD(PChar(''+Buff)));
 
     if hBtnExit <> 0 then
       ShowWindow(hBtnExit, SW_SHOWNORMAL);
