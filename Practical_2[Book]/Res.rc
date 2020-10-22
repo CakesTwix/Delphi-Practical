@@ -1,0 +1,20 @@
+#define IDC_COMBOBOX1 101
+#define IDC_EDIT1 102
+
+ICDialog DIALOG 70, 50, 241, 96
+STYLE DS_SYSMODAL | DS_MODALFRAME | WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_SYSMENU |
+WS_THICKFRAME | WS_MINIMIZEBOX
+CAPTION "Діалогове вікно з ресурсу"
+FONT 8, "MS Sans Serif"
+{
+DEFPUSHBUTTON "OK", IDOK, 188, 21, 50, 14
+PUSHBUTTON "Відміна", IDCANCEL, 188, 39, 50, 14
+PUSHBUTTON "Довідка", IDHELP, 188, 57, 50, 14
+COMBOBOX IDC_COMBOBOX1, 88, 23, 91, 33, CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+LTEXT "Приклад діалогового вікна з якимись елементами керування.", 10, 5, 5, 240, 8
+EDITTEXT IDC_EDIT1, 88, 43, 91, 12
+LTEXT "Комбінований список", 11, 5, 24, 79, 8
+LTEXT "Поле вводу", 12, 5, 45, 60, 8
+LTEXT "@CakesTwix", 12, 5, 65, 60, 8
+
+}
