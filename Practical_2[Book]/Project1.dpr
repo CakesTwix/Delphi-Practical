@@ -12,7 +12,7 @@ var hcbType : hWnd;
 hEdit : hWnd;
 ParamEdit : array [1..50] of char;
 ParamCB : PChar;
-{$R Res.RES}
+{$R 'Res.RES' 'Res.rc'}
 function DlgProc(Window : hWnd; Msg,WParam,LParam : Integer): Integer; stdcall;
 begin
 Result:=0;
