@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, TLHelp32, Registry;
+  Dialogs, StdCtrls, TLHelp32, Registry, Math;
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
@@ -19,9 +19,9 @@ type
     Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
-    WinVerisonGeneral_Label: TLabel;
+    ProductName_Label: TLabel;
     PlatformInfo_Label: TLabel;
-    Label11: TLabel;
+    WinVersion_Label: TLabel;
     WinDir_Label: TLabel;
     SysDir_Label: TLabel;
     ComputerName_Label: TLabel;
@@ -82,6 +82,38 @@ implementation
 
 {$R *.dfm}
 
+//Формат в более читаемый вид размера ОЗУ
+function ConvertBytes(Bytes: Int64): string;
+const
+  Description: Array [0 .. 8] of string = ('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+var
+  i: Integer;
+begin
+  i := 0;
+
+  while Bytes > Power(1024, i + 1) do
+    Inc(i);
+
+  Result := FormatFloat('###0.##', Bytes / Power(1024, i)) + #32 + Description[i];
+end;function FormatByteSize(const bytes: LongInt): string;
+const
+   B = 1; //byte
+   KB = 1024 * B; //kilobyte
+   MB = 1024 * KB; //megabyte
+   GB = 1024 * MB; //gigabyte
+ begin
+   if bytes > GB then
+     result := FormatFloat('#.## GB', bytes / GB)
+   else
+     if bytes > MB then
+       result := FormatFloat('#.## MB', bytes / MB)
+     else
+       if bytes > KB then
+         result := FormatFloat('#.## KB', bytes / KB)
+       else
+         result := FormatFloat('#.## bytes', bytes) ;
+ end;
+
 //Список окнов
 function EnumWndFunc(Hnd:HWND;PrID:DWORD):boolean; stdcall;
 var lpS : PWideChar;
@@ -140,17 +172,22 @@ end;
 end;
 
 //Информация про память
+//https://stackoverflow.com/questions/4023572/delphxe-globalmemorystatus-vs-globalmemorystatusex
 procedure TForm1.GetMemoryInfo;
-var lpBuffer : TMemoryStatus;
+var lpBuffer : TMemoryStatusEx;
 begin
 with lpBuffer do begin
 dwLength:=SizeOf(TMemoryStatus);
-GlobalMemoryStatus(lpBuffer);
-TotalMemory_Label.Caption:=IntToStr(dwTotalPhys div (1024*1024))+' Mбайт'; //Походу ограничение у делфи на 2гб
-FreeMemory_Label.Caption:=IntToStr(dwAvailPhys div (1024*1024))+' Mбайт'; //Походу ограничение у делфи на 2гб
-PercentMemory_Label.Caption:=IntToStr(dwMemoryLoad)+' %';
-TotalVirtualMemory_Label.Caption:=IntToStr(dwTotalVirtual div (1024*1024))+' Mбайт'; //Как-то не то берет
-AvailableVirtualMemory_Label.Caption:=IntToStr(dwAvailVirtual div (1024*1024))+' Mбайт'; //, отключил подкачку и он все равно показывает 2гб
+GlobalMemoryStatusEx(lpBuffer);
+FillChar(lpBuffer, SizeOf(lpBuffer), 0);
+lpBuffer.dwLength := SizeOf(lpBuffer);
+Win32Check(GlobalMemoryStatusEx(lpBuffer));
+
+TotalMemory_Label.Caption:=ConvertBytes(lpBuffer.ullTotalPhys);
+FreeMemory_Label.Caption:=ConvertBytes(lpBuffer.ullAvailPhys);
+PercentMemory_Label.Caption:=IntToStr(lpBuffer.dwMemoryLoad);
+TotalVirtualMemory_Label.Caption:=ConvertBytes(lpBuffer.ullTotalVirtual);
+AvailableVirtualMemory_Label.Caption:=ConvertBytes(lpBuffer.ullAvailVirtual);
 end;
 end;
 
@@ -186,6 +223,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
 dir: array [0..MAX_PATH] of Char;
 version: Integer;
+Registry : TRegistry;
 begin
   //Папка Windows
   WinDir_Label.Caption := GetEnvironmentVariable('WINDIR');
@@ -209,10 +247,10 @@ begin
   //Версия Windows
   version := LOWORD(GetVersion);
   case version of
-  10 : WinVerisonGeneral_Label.Caption := 'Windows 10';
-  4 : WinVerisonGeneral_Label.Caption := 'Windows 95';
-  261 : WinVerisonGeneral_Label.Caption := 'Windows XP';
-  6 : WinVerisonGeneral_Label.Caption := 'Windows Vista'
+  10 : PlatformInfo_Label.Caption := 'Windows 10';
+  4 : PlatformInfo_Label.Caption := 'Windows 95';
+  261 : PlatformInfo_Label.Caption := 'Windows XP';
+  6 : PlatformInfo_Label.Caption := 'Windows Vista'
   end;
 
   //Информация про ОЗУ
@@ -227,8 +265,21 @@ begin
   //Информация про окна
   EnumWindows(@EnumWndFunc,0);
 
-  UserName_Label.Caption := GetEnvironmentVariable('OS');
+  //Информация про юзера и имени ПК
+  //http://docwiki.embarcadero.com/Libraries/Sydney/en/System.SysUtils.GetEnvironmentVariable
+  //Полезная ссылка для значений GetEnvironmentVariable()
+  UserName_Label.Caption := GetEnvironmentVariable('USERNAME');
   ComputerName_Label.Caption := GetEnvironmentVariable('COMPUTERNAME');
-end;
 
+
+
+
+Registry:=TRegistry.Create(KEY_READ); //Без KEY_READ чет не читались данные
+Registry.RootKey:=HKEY_LOCAL_MACHINE;
+if Registry.OpenKey('\SOFTWARE\Microsoft\Windows NT\CurrentVersion',False) then begin
+WinVersion_Label.Caption:=Registry.ReadString('CurrentBuild');
+ProductName_Label.Caption:=Registry.ReadString('ProductName');
+end;
+end;
 end.
+

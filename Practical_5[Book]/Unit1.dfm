@@ -77,7 +77,7 @@ object Form1: TForm1
       Height = 13
       Caption = #1050#1086#1088#1080#1089#1090#1091#1074#1072#1095
     end
-    object WinVerisonGeneral_Label: TLabel
+    object ProductName_Label: TLabel
       Left = 152
       Top = 40
       Width = 31
@@ -91,7 +91,7 @@ object Form1: TForm1
       Height = 13
       Caption = 'PlatformInfo_Label'
     end
-    object Label11: TLabel
+    object WinVersion_Label: TLabel
       Left = 152
       Top = 110
       Width = 31
