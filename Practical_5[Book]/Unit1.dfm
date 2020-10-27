@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object GroupBox1: TGroupBox
@@ -76,19 +77,19 @@ object Form1: TForm1
       Height = 13
       Caption = #1050#1086#1088#1080#1089#1090#1091#1074#1072#1095
     end
-    object Label9: TLabel
+    object WinVerisonGeneral_Label: TLabel
       Left = 152
       Top = 40
       Width = 31
       Height = 13
       Caption = 'Label1'
     end
-    object Label10: TLabel
+    object PlatformInfo_Label: TLabel
       Left = 152
       Top = 75
-      Width = 31
+      Width = 91
       Height = 13
-      Caption = 'Label1'
+      Caption = 'PlatformInfo_Label'
     end
     object Label11: TLabel
       Left = 152
@@ -97,40 +98,33 @@ object Form1: TForm1
       Height = 13
       Caption = 'Label1'
     end
-    object Label12: TLabel
-      Left = 152
-      Top = 145
-      Width = 31
-      Height = 13
-      Caption = 'Label1'
-    end
-    object Label13: TLabel
+    object WinDir_Label: TLabel
       Left = 152
       Top = 172
       Width = 31
       Height = 13
       Caption = 'Label1'
     end
-    object Label14: TLabel
+    object SysDir_Label: TLabel
       Left = 152
       Top = 204
       Width = 31
       Height = 13
       Caption = 'Label1'
     end
-    object Label15: TLabel
+    object ComputerName_Label: TLabel
       Left = 152
       Top = 234
-      Width = 31
+      Width = 105
       Height = 13
-      Caption = 'Label1'
+      Caption = 'ComputerName_Label'
     end
-    object Label16: TLabel
+    object UserName_Label: TLabel
       Left = 152
       Top = 263
-      Width = 31
+      Width = 80
       Height = 13
-      Caption = 'Label1'
+      Caption = 'UserName_Label'
     end
     object GroupBox2: TGroupBox
       Left = 336
@@ -174,43 +168,43 @@ object Form1: TForm1
         Height = 13
         Caption = #1044#1086#1089#1090#1091#1087#1085#1086' '#1074#1110#1088#1090#1091#1072#1083#1100#1085#1086#1111
       end
-      object Label22: TLabel
+      object TotalMemory_Label: TLabel
         Left = 176
         Top = 24
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label23: TLabel
+      object FreeMemory_Label: TLabel
         Left = 176
         Top = 43
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label24: TLabel
+      object PercentMemory_Label: TLabel
         Left = 176
         Top = 62
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label25: TLabel
+      object TotalVirtualMemory_Label: TLabel
         Left = 176
         Top = 104
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label26: TLabel
+      object AvailableVirtualMemory_Label: TLabel
         Left = 176
-        Top = 129
+        Top = 123
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
     end
-    object GroupBox3: TGroupBox
+    object MainDisk_GroupBox: TGroupBox
       Left = 599
       Top = 16
       Width = 250
@@ -252,36 +246,36 @@ object Form1: TForm1
         Height = 13
         Caption = #1042#1110#1083#1100#1085#1086' '#1085#1072' HDD'
       end
-      object Label32: TLabel
-        Left = 200
+      object SerialNumber_Label: TLabel
+        Left = 152
         Top = 24
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label33: TLabel
-        Left = 200
+      object Label_Label: TLabel
+        Left = 152
         Top = 59
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label34: TLabel
-        Left = 200
+      object FileSystem_Label: TLabel
+        Left = 152
         Top = 43
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label35: TLabel
-        Left = 200
+      object MemoryHDD_Label: TLabel
+        Left = 152
         Top = 110
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label36: TLabel
-        Left = 200
+      object FreeMemoryHDD_Label: TLabel
+        Left = 152
         Top = 129
         Width = 31
         Height = 13
@@ -316,21 +310,21 @@ object Form1: TForm1
         Height = 13
         Caption = #1063#1072#1089#1090#1086#1090#1072
       end
-      object Label40: TLabel
+      object CPUName_Label: TLabel
         Left = 224
         Top = 40
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label41: TLabel
+      object CPUVendor_Label: TLabel
         Left = 224
         Top = 72
         Width = 31
         Height = 13
         Caption = 'Label1'
       end
-      object Label42: TLabel
+      object CPUSpeed_Label: TLabel
         Left = 224
         Top = 104
         Width = 31
@@ -346,7 +340,7 @@ object Form1: TForm1
     Height = 364
     Caption = #1057#1087#1080#1089#1086#1082' '#1087#1088#1086#1094#1077#1089#1110#1074
     TabOrder = 1
-    object ListBox1: TListBox
+    object Process_List: TListBox
       Left = 3
       Top = 56
       Width = 403
@@ -364,7 +358,7 @@ object Form1: TForm1
     Height = 364
     Caption = #1057#1087#1080#1089#1086#1082' '#1074#1110#1082#1086#1085
     TabOrder = 2
-    object ListBox2: TListBox
+    object lbWindows: TListBox
       Left = 3
       Top = 56
       Width = 404
@@ -374,12 +368,12 @@ object Form1: TForm1
       ShowHint = False
       TabOrder = 0
     end
-    object CheckBox1: TCheckBox
+    object cbAllWindows: TCheckBox
       Left = 11
       Top = 33
-      Width = 97
+      Width = 134
       Height = 17
-      Caption = #1042#1089#1110' '#1074#1110#1082#1085#1072
+      Caption = #1042#1089#1110' '#1074#1110#1082#1085#1072' ('#1053#1077' '#1088#1072#1073#1086#1090#1072#1077#1090')'
       TabOrder = 1
     end
   end
