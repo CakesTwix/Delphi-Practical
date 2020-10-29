@@ -5,6 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, TLHelp32, Registry, Math;
+
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
@@ -68,162 +69,155 @@ type
   end;
 
 const
-Win7 = 6;
+  Win7 = 6;
 
 var
   Form1: TForm1;
-  pe : TProcessEntry32;
-  hSnap : THandle;
-  C : Cardinal;
+  pe: TProcessEntry32;
+  hSnap: THandle;
+  C: cardinal;
   R, Path: string;
-
 
 implementation
 
 {$R *.dfm}
 
 //Формат в более читаемый вид размера ОЗУ
-function ConvertBytes(Bytes: Int64): string;
+function ConvertBytes(Bytes: int64): string;
 const
-  Description: Array [0 .. 8] of string = ('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+  Description: array [0 .. 8] of string = ('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
 var
-  i: Integer;
+  i: integer;
 begin
   i := 0;
 
   while Bytes > Power(1024, i + 1) do
     Inc(i);
 
-  Result := FormatFloat('###0.##', Bytes / Power(1024, i)) + #32 + Description[i];
-end;function FormatByteSize(const bytes: LongInt): string;
-const
-   B = 1; //byte
-   KB = 1024 * B; //kilobyte
-   MB = 1024 * KB; //megabyte
-   GB = 1024 * MB; //gigabyte
- begin
-   if bytes > GB then
-     result := FormatFloat('#.## GB', bytes / GB)
-   else
-     if bytes > MB then
-       result := FormatFloat('#.## MB', bytes / MB)
-     else
-       if bytes > KB then
-         result := FormatFloat('#.## KB', bytes / KB)
-       else
-         result := FormatFloat('#.## bytes', bytes) ;
- end;
+  result := FormatFloat('###0.##', Bytes / Power(1024, i)) + #32 + Description[i];
+end;
 
 //Список окнов
-function EnumWndFunc(Hnd:HWND;PrID:DWORD):boolean; stdcall;
-var lpS : PWideChar;
+function EnumWndFunc(Hnd: HWND; PrID: DWORD): boolean; stdcall;
+var
+  lpS: PWideChar;
 begin
-Result:=true;
-GetMem(lpS,127);
-if Form1.cbAllWindows.Checked then begin
-if (GetWindowText(Hnd,lpS,127)<>0) then if lps<>'' then Form1.lbWindows.Items.Add(lpS);
-end else
-if (IsWindowVisible(Hnd)) and (GetWindow(Hnd,GW_OWNER)=0) and
-(GetWindowText(Hnd,lpS,127)<>0) then if lpS<>'' then Form1.lbWindows.Items.Add(lpS);
-FreeMem(lpS,127);
+  result := true;
+  GetMem(lpS, 127);
+  if Form1.cbAllWindows.Checked then
+  begin
+    if (GetWindowText(Hnd, lpS, 127) <> 0) then
+      if lps <> '' then
+        Form1.lbWindows.Items.Add(lpS);
+  end
+  else
+  if (IsWindowVisible(Hnd)) and (GetWindow(Hnd, GW_OWNER) = 0) and (GetWindowText(Hnd, lpS, 127) <> 0) then
+    if lpS <> '' then
+      Form1.lbWindows.Items.Add(lpS);
+  FreeMem(lpS, 127);
 end;
 
 //Определение частоты процессора
-function GetCPUSpeed: Double;
-const DelayTime = 500;
-var TimerHi : DWORD;
-TimerLo : DWORD;
-PriorityClass : Integer;
-Priority : Integer;
+function GetCPUSpeed: double;
+const
+  DelayTime = 500;
+var
+  TimerHi: DWORD;
+  TimerLo: DWORD;
+  PriorityClass: integer;
+  Priority: integer;
 begin
-PriorityClass := GetPriorityClass(GetCurrentProcess);
-Priority := GetThreadPriority(GetCurrentThread);
-SetPriorityClass(GetCurrentProcess, REALTIME_PRIORITY_CLASS);
-SetThreadPriority(GetCurrentThread, THREAD_PRIORITY_TIME_CRITICAL);
-asm
-push 10
-call Sleep
-DW 310Fh
-MOV TimerLo, EAX
-MOV TimerHi, EDX
-push DelayTime
-call Sleep
-DW 310Fh
-SUB EAX, TimerLo
-SBB EDX, TimerHi
-MOV TimerLo, EAX
-MOV TimerHi, EDX
-end;
-SetThreadPriority(GetCurrentThread, Priority);
-SetPriorityClass(GetCurrentProcess, PriorityClass);
-Result := TimerLo / (1000.0 * DelayTime);
+  PriorityClass := GetPriorityClass(GetCurrentProcess);
+  Priority := GetThreadPriority(GetCurrentThread);
+  SetPriorityClass(GetCurrentProcess, REALTIME_PRIORITY_CLASS);
+  SetThreadPriority(GetCurrentThread, THREAD_PRIORITY_TIME_CRITICAL);
+  asm
+           PUSH    10
+           CALL    Sleep
+           DW      310Fh
+           MOV     TimerLo, EAX
+           MOV     TimerHi, EDX
+           PUSH    DelayTime
+           CALL    Sleep
+           DW      310Fh
+           SUB     EAX, TimerLo
+           SBB     EDX, TimerHi
+           MOV     TimerLo, EAX
+           MOV     TimerHi, EDX
+  end;
+  SetThreadPriority(GetCurrentThread, Priority);
+  SetPriorityClass(GetCurrentProcess, PriorityClass);
+  result := TimerLo / (1000.0 * DelayTime);
 end;
 
 //Информация про процессор
 procedure TForm1.GetCPUInfo;
-var Registry : TRegistry;
+var
+  Registry: TRegistry;
 begin
-Registry:=TRegistry.Create(KEY_READ); //Без KEY_READ чет не читались данные
-Registry.RootKey:=HKEY_LOCAL_MACHINE;
-if Registry.OpenKey('HARDWARE\DESCRIPTION\System\CentralProcessor\0\',False) then begin
-CPUName_Label.Caption:=Registry.ReadString('ProcessorNameString'); //Поменял, чтобы было более человеческое название
-CPUVendor_Label.Caption:=Registry.ReadString('VendorIdentifier');
-end;
+  Registry := TRegistry.Create(KEY_READ); //Без KEY_READ чет не читались данные
+  Registry.RootKey := HKEY_LOCAL_MACHINE;
+  if Registry.OpenKey('HARDWARE\DESCRIPTION\System\CentralProcessor\0\', false) then
+  begin
+    CPUName_Label.Caption := Registry.ReadString('ProcessorNameString');
+    //Поменял, чтобы было более человеческое название
+    CPUVendor_Label.Caption := Registry.ReadString('VendorIdentifier');
+  end;
 end;
 
 //Информация про память
 //https://stackoverflow.com/questions/4023572/delphxe-globalmemorystatus-vs-globalmemorystatusex
 procedure TForm1.GetMemoryInfo;
-var lpBuffer : TMemoryStatusEx;
+var
+  lpBuffer: TMemoryStatusEx;
 begin
-with lpBuffer do begin
-dwLength:=SizeOf(TMemoryStatus);
-GlobalMemoryStatusEx(lpBuffer);
-FillChar(lpBuffer, SizeOf(lpBuffer), 0);
-lpBuffer.dwLength := SizeOf(lpBuffer);
-Win32Check(GlobalMemoryStatusEx(lpBuffer));
+  with lpBuffer do
+  begin
+    dwLength := SizeOf(TMemoryStatus);
+    GlobalMemoryStatusEx(lpBuffer);
+    FillChar(lpBuffer, SizeOf(lpBuffer), 0);
+    lpBuffer.dwLength := SizeOf(lpBuffer);
+    Win32Check(GlobalMemoryStatusEx(lpBuffer));
 
-TotalMemory_Label.Caption:=ConvertBytes(lpBuffer.ullTotalPhys);
-FreeMemory_Label.Caption:=ConvertBytes(lpBuffer.ullAvailPhys);
-PercentMemory_Label.Caption:=IntToStr(lpBuffer.dwMemoryLoad);
-TotalVirtualMemory_Label.Caption:=ConvertBytes(lpBuffer.ullTotalVirtual);
-AvailableVirtualMemory_Label.Caption:=ConvertBytes(lpBuffer.ullAvailVirtual);
-end;
+    TotalMemory_Label.Caption := ConvertBytes(lpBuffer.ullTotalPhys);
+    FreeMemory_Label.Caption := ConvertBytes(lpBuffer.ullAvailPhys);
+    PercentMemory_Label.Caption := IntToStr(lpBuffer.dwMemoryLoad);
+    TotalVirtualMemory_Label.Caption := ConvertBytes(lpBuffer.ullTotalVirtual);
+    AvailableVirtualMemory_Label.Caption := ConvertBytes(lpBuffer.ullAvailVirtual);
+  end;
 end;
 
 //Информация про диски
 procedure TForm1.GetHDInfo;
-var VolumeName,
-FileSystemName : array [0..MAX_PATH-1] of Char;
-VolumeSerialNo : DWORD;
-MaxComponentLength,
-FileSystemFlags : DWORD;
-SC : pchar;
-MainDir : string;
-FreeAvailable,
-TotalSpace : TLargeInteger;
-TotalFree : TLargeInteger;
+var
+  VolumeName, FileSystemName: array [0..MAX_PATH - 1] of char;
+  VolumeSerialNo: DWORD;
+  MaxComponentLength, FileSystemFlags: DWORD;
+  SC: PChar;
+  MainDir: string;
+  FreeAvailable, TotalSpace: TLargeInteger;
+  TotalFree: TLargeInteger;
 begin
-MainDir:=ExtractFilePath(Application.ExeName);
-MainDisk_GroupBox.Caption:=' Жорсткий диск '+MainDir[1]+MainDir[2]+' ';
-SC:=StrAlloc(4);
-StrPCopy(SC, MainDir[1]+MainDir[2]+MainDir[3]);
-GetVolumeInformation(SC,VolumeName,MAX_PATH,@VolumeSerialNo,
-MaxComponentLength,FileSystemFlags,FileSystemName,MAX_PATH);
-SerialNumber_Label.Caption:=IntToStr(VolumeSerialNo);
-FileSystem_Label.Caption:=FileSystemName;
-Label_Label.Caption:=VolumeName; //Почему-то пустая строка
-GetDiskFreeSpaceEx(SC, FreeAvailable, TotalSpace, @TotalFree);
-MemoryHDD_Label.Caption:=IntToStr(TotalSpace div (1024*1024*1024))+' GB';
-FreeMemoryHDD_Label.Caption:=IntToStr(TotalFree div (1024*1024))+' MB';
-StrDispose(SC);
+  MainDir := ExtractFilePath(Application.ExeName);
+  MainDisk_GroupBox.Caption := ' Жорсткий диск ' + MainDir[1] + MainDir[2] + ' ';
+  SC := StrAlloc(4);
+  StrPCopy(SC, MainDir[1] + MainDir[2] + MainDir[3]);
+  GetVolumeInformation(SC, VolumeName, MAX_PATH, @VolumeSerialNo,
+    MaxComponentLength, FileSystemFlags, FileSystemName, MAX_PATH);
+  SerialNumber_Label.Caption := IntToStr(VolumeSerialNo);
+  FileSystem_Label.Caption := FileSystemName;
+  Label_Label.Caption := VolumeName; //Почему-то пустая строка
+  GetDiskFreeSpaceEx(SC, FreeAvailable, TotalSpace, @TotalFree);
+  MemoryHDD_Label.Caption := IntToStr(TotalSpace div (1024 * 1024 * 1024)) + ' GB';
+  FreeMemoryHDD_Label.Caption := IntToStr(TotalFree div (1024 * 1024)) + ' MB';
+  StrDispose(SC);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
-dir: array [0..MAX_PATH] of Char;
-version: Integer;
-Registry : TRegistry;
+  dir: array [0..MAX_PATH] of char;
+  version: integer;
+  Registry: TRegistry;
 begin
   //Папка Windows
   WinDir_Label.Caption := GetEnvironmentVariable('WINDIR');
@@ -233,24 +227,26 @@ begin
   SysDir_Label.Caption := StrPas(dir);
 
   //Частота процессора
-  CPUSpeed_Label.Caption:=IntToStr(Round(GetCPUSpeed))+' МГц';
+  CPUSpeed_Label.Caption := IntToStr(Round(GetCPUSpeed)) + ' МГц';
 
   //Список процессов
-  pe.dwSize:=SizeOf(pe);
-  hSnap:=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
-  if Process32First(hSnap,pe) then
+  pe.dwSize := SizeOf(pe);
+  hSnap := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if Process32First(hSnap, pe) then
   begin
     Process_List.Items.Add(pe.szExeFile);
-    while Process32Next(hSnap,pe) do Process_List.Items.Add(pe.szExeFile);
+    while Process32Next(hSnap, pe) do
+      Process_List.Items.Add(pe.szExeFile);
   end;
 
   //Версия Windows
   version := LOWORD(GetVersion);
   case version of
-  10 : PlatformInfo_Label.Caption := 'Windows 10';
-  4 : PlatformInfo_Label.Caption := 'Windows 95';
-  261 : PlatformInfo_Label.Caption := 'Windows XP';
-  6 : PlatformInfo_Label.Caption := 'Windows Vista'
+    10: PlatformInfo_Label.Caption := 'Windows 10';
+    4: PlatformInfo_Label.Caption := 'Windows 95';
+    261: PlatformInfo_Label.Caption := 'Windows XP';
+    262: PlatformInfo_Label.Caption := 'Windows 7';
+    6: PlatformInfo_Label.Caption := 'Windows Vista'
   end;
 
   //Информация про ОЗУ
@@ -263,7 +259,7 @@ begin
   GetHDInfo;
 
   //Информация про окна
-  EnumWindows(@EnumWndFunc,0);
+  EnumWindows(@EnumWndFunc, 0);
 
   //Информация про юзера и имени ПК
   //http://docwiki.embarcadero.com/Libraries/Sydney/en/System.SysUtils.GetEnvironmentVariable
@@ -271,15 +267,13 @@ begin
   UserName_Label.Caption := GetEnvironmentVariable('USERNAME');
   ComputerName_Label.Caption := GetEnvironmentVariable('COMPUTERNAME');
 
-
-
-
-Registry:=TRegistry.Create(KEY_READ); //Без KEY_READ чет не читались данные
-Registry.RootKey:=HKEY_LOCAL_MACHINE;
-if Registry.OpenKey('\SOFTWARE\Microsoft\Windows NT\CurrentVersion',False) then begin
-WinVersion_Label.Caption:=Registry.ReadString('CurrentBuild');
-ProductName_Label.Caption:=Registry.ReadString('ProductName');
+  Registry := TRegistry.Create(KEY_READ); //Без KEY_READ чет не читались данные
+  Registry.RootKey := HKEY_LOCAL_MACHINE;
+  if Registry.OpenKey('\SOFTWARE\Microsoft\Windows NT\CurrentVersion', false) then
+  begin
+    WinVersion_Label.Caption := Registry.ReadString('CurrentBuild');
+    ProductName_Label.Caption := Registry.ReadString('ProductName');
+  end;
 end;
-end;
+
 end.
-
