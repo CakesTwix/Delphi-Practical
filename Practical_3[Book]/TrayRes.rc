@@ -1,0 +1,10 @@
+#include "constant.pas"
+MAINMENU MENU
+BEGIN
+POPUP "Dummy" BEGIN
+MENUITEM "&Про програму", ID_ABOUT
+MENUITEM "&Форма з DLL", ID_DLLFORM
+MENUITEM SEPARATOR
+MENUITEM "&Вихід", ID_CLOSE
+END
+END
